@@ -133,7 +133,7 @@ return [
                 'icon_class' => 'voyager-person',
             ],
             'voyager::generic.home' => [
-                'route'        => '/',
+                'route'        => '/admin',
                 'icon_class'   => 'voyager-home',
                 'target_blank' => true,
             ],
@@ -232,7 +232,7 @@ return [
           'video/mp4',
         ],
         //Path for media-manager. Relative to the filesystem.
-        'path'                => '/',
+        'path'                => '/admin',
         'show_folders'        => true,
         'allow_upload'        => true,
         'allow_move'          => true,
