@@ -1,4 +1,4 @@
-@extends('eventos.layout')
+@extends('voyager::master')
 
 @section('title', 'Proponer un Evento')
 
