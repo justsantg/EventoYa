@@ -1,6 +1,6 @@
 @extends('voyager::master')
 
-@section('page_title', 'Eventos en Pasto')
+@section('page_title', 'Lista de Eventos')
 
 @section('content')
     <div class="page-content container-fluid">
@@ -35,6 +35,7 @@
                         <p><strong>⏰ Hora:</strong> {{ \Carbon\Carbon::parse($evento->hora)->format('h:i A') }}</p>
                         <p><strong>📍 Ubicación:</strong> {{ $evento->ubicacion }}</p>
                         <p><strong>📝 Descripción:</strong> {{ $evento->descripcion }}</p>
+                        <a href="{{ route('eventos.show', $evento->id) }}" class="btn btn-info">Ver detalles</a>
                     </div>
                 </div>
             @empty

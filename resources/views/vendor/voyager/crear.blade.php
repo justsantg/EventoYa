@@ -3,40 +3,58 @@
 @section('title', 'Proponer un Evento')
 
 @section('content')
-    <h1>➕ Proponer un Evento</h1>
-
-    @if($errors->any())
-        <div class="mensaje-error">
-            <ul>
-                @foreach($errors->all() as $error)
-                    <li>⚠️ {{ $error }}</li>
-                @endforeach
-            </ul>
+    <div class="page-content container-fluid">
+        {{-- Mostrar el menú definido en Voyager --}}
+        <div class="menu-container">
+            {!! menu('user', 'bootstrap') !!}
         </div>
-    @endif
 
-    <form action="{{ route('eventos.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
+        <h1>➕ Proponer un Evento</h1>
 
-        <label for="titulo">🎭 Título:</label>
-        <input type="text" name="titulo" id="titulo" required>
+        @if($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>⚠️ {{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        <label for="descripcion">📝 Descripción:</label>
-        <textarea name="descripcion" id="descripcion" rows="4" required style="width: 100%; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #ccc;"></textarea>
+        <form action="{{ route('voyager.eventos.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
 
-        <label for="fecha">📅 Fecha:</label>
-        <input type="date" name="fecha" id="fecha" required>
+            <div class="form-group">
+                <label for="titulo">🎭 Título:</label>
+                <input type="text" name="titulo" id="titulo" required class="form-control">
+            </div>
 
-        <label for="hora">⏰ Hora:</label>
-        <input type="time" name="hora" id="hora" required>
+            <div class="form-group">
+                <label for="descripcion">📝 Descripción:</label>
+                <textarea name="descripcion" id="descripcion" rows="4" required class="form-control"></textarea>
+            </div>
 
-        <label for="ubicacion">📍 Ubicación:</label>
-        <input type="text" name="ubicacion" id="ubicacion" required>
+            <div class="form-group">
+                <label for="fecha">📅 Fecha:</label>
+                <input type="date" name="fecha" id="fecha" required class="form-control">
+            </div>
 
-        <label for="imagen">🖼 Imagen del evento:</label>
-        <input type="file" name="imagen" id="imagen" accept="image/*">
+            <div class="form-group">
+                <label for="hora">⏰ Hora:</label>
+                <input type="time" name="hora" id="hora" required class="form-control">
+            </div>
 
+            <div class="form-group">
+                <label for="ubicacion">📍 Ubicación:</label>
+                <input type="text" name="ubicacion" id="ubicacion" required class="form-control">
+            </div>
 
-        <button type="submit">Enviar Evento</button>
-    </form>
+            <div class="form-group">
+                <label for="imagen">🖼 Imagen del evento:</label>
+                <input type="file" name="imagen" id="imagen" accept="image/*" class="form-control">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enviar Evento</button>
+        </form>
+    </div>
 @endsection
