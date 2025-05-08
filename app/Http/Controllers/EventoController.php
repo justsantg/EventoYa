@@ -2,72 +2,157 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Evento;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class EventoController extends Controller
 {
+    // WEB METHODS
+    
     public function index()
-{
-    $eventos = Evento::all();
+    {
+        $eventos = Evento::where('aprobado', 1)
+                        ->orderBy('fecha', 'desc')
+                        ->get();
+        return view('vendor.voyager.eventos.index', compact('eventos'));
+    }
 
-    $eventosParaCalendario = $eventos->map(function ($evento) {
-        return [
-            'title' => $evento->titulo,
-            'start' => $evento->fecha,
-            'url' => route('eventos.show', $evento->id),  // This line is correct as long as 'eventos.show' points to the right route
-        ];
-    });
+    public function create()
+    {
+        return view('vendor.voyager.crear');
+    }
 
-    return view('eventos.index', compact('eventos', 'eventosParaCalendario'));
-}
+    public function store(Request $request)
+    {
+        $validated = $this->validateEvento($request);
+        
+        $evento = new Evento();
+        $this->saveEvento($evento, $request);
+        
+        return redirect()->route('user.dashboard', $evento->id)
+            ->with('success', 'Evento creado correctamente. Pendiente de aprobación.');
+    }
 
     public function show($id)
     {
         $evento = Evento::findOrFail($id);
-        return view('eventos.show', compact('evento'));
+        return view('vendor.voyager.eventos.show', compact('evento'));
     }
-    
-    /**
-     * Store a newly created evento in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        // Validar los datos del formulario
-        $request->validate([
-            'titulo' => 'required',
-            'fecha' => 'required|date',
-            'hora' => 'required',
-            'descripcion' => 'required',
-            'ubicacion' => 'required',
-            'Imagen' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            // Añade aquí otras validaciones según los campos de tu formulario
-        ]);
 
-        // Crear el nuevo evento
+    public function edit($id)
+    {
+        $evento = Evento::findOrFail($id);
+        return view('vendor.voyager.edit', compact('evento'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $evento = Evento::findOrFail($id);
+        $validated = $this->validateEvento($request);
+        $this->saveEvento($evento, $request);
+
+        // Redirige al dashboard del usuario con un mensaje de éxito
+        return redirect()->route('user.dashboard')
+            ->with('success', 'Evento actualizado correctamente.');
+    }
+
+    public function destroy($id)
+    {
+        $evento = Evento::findOrFail($id);
+
+        if ($evento->imagen) {
+            Storage::delete('public/' . $evento->imagen);
+        }
+
+        $evento->delete();
+
+        // Corrige la redirección al dashboard del usuario
+        return redirect()->route('user.dashboard')
+            ->with('success', 'Evento eliminado correctamente.');
+    }
+
+
+    // API METHODS
+    
+    public function indexApi()
+    {
+        return Evento::where('aprobado', 1)
+                   ->orderBy('fecha', 'desc')
+                   ->get();
+    }
+
+    public function showApi($id)
+    {
+        return Evento::findOrFail($id);
+    }
+
+    public function storeApi(Request $request)
+    {
+        $validated = $this->validateEvento($request);
+        
         $evento = new Evento();
+        $this->saveEvento($evento, $request);
+        
+        return response()->json($evento, 201);
+    }
+
+    public function updateApi(Request $request, $id)
+    {
+        $evento = Evento::findOrFail($id);
+        $validated = $this->validateEvento($request);
+        $this->saveEvento($evento, $request);
+        
+        return response()->json($evento);
+    }
+
+    public function destroyApi($id)
+    {
+        $evento = Evento::findOrFail($id);
+        
+        if ($evento->imagen) {
+            Storage::delete('public/' . $evento->imagen);
+        }
+        
+        $evento->delete();
+        
+        return response()->json(null, 204);
+    }
+
+    // HELPER METHODS
+    
+    private function validateEvento(Request $request)
+    {
+        return $request->validate([
+            'titulo' => 'required|string|max:255',
+            'fecha' => 'required|date',
+            'hora' => 'required|string|max:50',
+            'ubicacion' => 'required|string|max:255',
+            'descripcion' => 'required|string',
+            'imagen' => 'nullable|image|max:2048',
+        ]);
+    }
+
+    private function saveEvento(Evento $evento, Request $request)
+    {
         $evento->titulo = $request->titulo;
         $evento->fecha = $request->fecha;
         $evento->hora = $request->hora;
-        $evento->descripcion = $request->descripcion; // Asegúrate de asignar la descripción
-        $evento->ubicacion = $request->ubicacion; // Asegúrate de asignar la ubicación
-        if ($request -> hasFile('Imagen')){
-            $imagen = $request->file('Imagen');
-            $rutaImagen = $imagen->store('eventos', 'public');
-            $evento->imagen = $rutaImagen;
+        $evento->ubicacion = $request->ubicacion;
+        $evento->descripcion = $request->descripcion;
         
+        if (auth()->check()) {
+            $evento->user_id = auth()->id();
         }
         
-        // Por defecto podría estar pendiente de aprobación
-        $evento->aprobado = 0;
+        if ($request->hasFile('imagen')) {
+            if ($evento->imagen) {
+                Storage::delete('public/' . $evento->imagen);
+            }
+            $imagePath = $request->file('imagen')->store('eventos', 'public');
+            $evento->imagen = $imagePath;
+        }
         
         $evento->save();
-
-        // Redireccionar - puedes cambiar esta redirección según tus necesidades
-        return redirect()->route('user.dashboard') 
-            ->with('success', 'Evento creado exitosamente. Está pendiente de aprobación.');
     }
 }
