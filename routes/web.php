@@ -5,7 +5,12 @@ use TCG\Voyager\Facades\Voyager;
 use App\Models\Evento;
 use App\Http\Controllers\EventoController;
 
-// Define a login route that redirects to Voyager's login
+// ✅ Ruta raíz redirige al dashboard del usuario
+Route::get('/', function () {
+    return redirect('/admin/user-dashboard');
+});
+
+// 🔐 Ruta de login redirige a Voyager
 Route::get('/login', function () {
     return redirect('/admin/login');
 })->name('login');
@@ -16,33 +21,32 @@ Route::get('/admin/user-dashboard', function () {
     return view('vendor.voyager.user-dashboard', compact('eventos'));
 })->middleware('auth')->name('user.dashboard');
 
-// 🏗️ Ruta para mostrar el formulario de creación de eventos
+// 🏗️ Formulario para crear eventos
 Route::get('/admin/crear', function () {
     return view('vendor.voyager.crear');
 })->middleware('auth')->name('eventos.crear');
 
-// ➕ Ruta para almacenar eventos
-Route::post('/admin/eventos', [EventoController::class, 'store'])->name('eventos.store')->middleware('auth');
+// ➕ Guardar un nuevo evento
+Route::post('/admin/eventos', [EventoController::class, 'store'])
+    ->middleware('auth')->name('eventos.store');
 
-// 🌟 Ruta para mostrar un evento específico
-Route::get('/admin/eventos/{id}', [EventoController::class, 'show'])->name('eventos.show')->middleware('auth');
+// 🌟 Mostrar un evento específico
+Route::get('/admin/eventos/{id}', [EventoController::class, 'show'])
+    ->middleware('auth')->name('eventos.show');
 
-// ✏️ Ruta para editar
+// ✏️ Formulario para editar un evento
 Route::get('/eventos/{id}/edit', [EventoController::class, 'edit'])
-    ->middleware('auth')
-    ->name('eventos.edit');
+    ->middleware('auth')->name('eventos.edit');
 
-// 🔄 Ruta para actualizar
-Route::put('admin/eventos/{id}', [EventoController::class, 'update'])
-    ->middleware('auth')
-    ->name('eventos.update');
+// 🔄 Actualizar un evento existente
+Route::put('/admin/eventos/{id}', [EventoController::class, 'update'])
+    ->middleware('auth')->name('eventos.update');
 
-// 🗑️ Ruta para eliminar
-Route::delete('admin/eventos/{id}', [EventoController::class, 'destroy'])
-    ->middleware('auth')
-    ->name('eventos.destroy');
-    
-// 🚪 Rutas Voyager (debe ir al final)
+// 🗑️ Eliminar un evento
+Route::delete('/admin/eventos/{id}', [EventoController::class, 'destroy'])
+    ->middleware('auth')->name('eventos.destroy');
+
+// 🚪 Rutas Voyager (deben ir al final)
 Route::group(['prefix' => 'admin'], function () {
     Voyager::routes();
 });

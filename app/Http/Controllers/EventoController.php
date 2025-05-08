@@ -47,15 +47,19 @@ class EventoController extends Controller
     }
 
     public function update(Request $request, $id)
-    {
-        $evento = Evento::findOrFail($id);
-        $validated = $this->validateEvento($request);
-        $this->saveEvento($evento, $request);
+{
+    $evento = Evento::findOrFail($id);
+    
+    // Validación
+    $validated = $this->validateEvento($request);
+    
+    // Actualización
+    $this->saveEvento($evento, $request);
 
-        // Redirige al dashboard del usuario con un mensaje de éxito
-        return redirect()->route('user.dashboard')
-            ->with('success', 'Evento actualizado correctamente.');
-    }
+    // Redirige a la misma página de edición con mensaje de éxito
+    return redirect()->route('eventos.edit', $evento->id)
+        ->with('success', 'Evento actualizado correctamente.');
+}
 
     public function destroy($id)
     {
